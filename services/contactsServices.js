@@ -1,50 +1,18 @@
-import * as path from "path";
-import { nanoid } from "nanoid";
-import { writeFile, readFile } from "fs/promises";
+import Contact from "../models/Contact.js";
 
-const contactsPath = path.resolve("db", "contacts.json");
+const listContacts = () => Contact.find();
 
-const listContacts = async () => {
-  const data = await readFile(contactsPath, "utf-8");
-  return JSON.parse(data);
-};
+const getContactById = (id) => Contact.findById(id);
 
-const getContactById = async (id) => {
-  const contacts = await listContacts();
-  const result = contacts.find((item) => item.id === id);
+const removeContact = (id) => Contact.findByIdAndDelete(id);
 
-  return result || null;
-};
+const addContact = (data) => Contact.create(data);
 
-const removeContact = async (id) => {
-  const contacts = await listContacts();
-  const deletedContactIndex = contacts.findIndex((item) => item.id === id);
-  if (deletedContactIndex !== -1) {
-    const [deletedContact] = contacts.splice(deletedContactIndex, 1);
-    await writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-    return deletedContact;
-  }
-  return null;
-};
+const updateContactById = (id, data) =>
+  Contact.findByIdAndUpdate(id, data, { new: true, runValidators: true });
 
-const addContact = async ({ name, email, phone }) => {
-  const contacts = await listContacts();
-  const addedContact = { id: nanoid(), name, email, phone };
-  contacts.push(addedContact);
-  await writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return addedContact;
-};
-
-const updateContactById = async (id, data) => {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((item) => item.id === id);
-  if (index === -1) {
-    return null;
-  }
-  contacts[index] = { ...contacts[index], ...data };
-  await writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return contacts[index];
-};
+const updateContactStatus = (id, favorite) =>
+  Contact.findByIdAndUpdate(id, favorite, { new: true, runValidators: true });
 
 export default {
   listContacts,
@@ -52,4 +20,5 @@ export default {
   removeContact,
   addContact,
   updateContactById,
+  updateContactStatus,
 };
